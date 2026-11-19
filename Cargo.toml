@@ -146,7 +146,7 @@ codegen-units = 1
 [profile.wasm-release]
 inherits = "release"
 opt-level = "z"
-lto = "fat"
+lto = "thin"
 codegen-units = 1
 strip = "debuginfo"
 
