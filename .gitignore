@@ -11,3 +11,7 @@ target/
 /craft-fonts
 *.log
 __pycache__/
+1.txt
+git-switch.sh
+/.cache/
+

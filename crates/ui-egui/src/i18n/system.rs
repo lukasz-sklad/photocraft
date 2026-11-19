@@ -7,6 +7,15 @@ const MAX_SYSTEM_TAGS: usize = 64;
 #[cfg(not(target_arch = "wasm32"))]
 const MAX_SYSTEM_TAG_BYTES: usize = 128;
 
+#[cfg(not(test))]
+static SYSTEM: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
+
+/// Tell the UI the system/browser's preferred languages before the first frame.
+pub fn set_system_tags(_tags: Vec<String>) {
+    #[cfg(not(test))]
+    let _ = SYSTEM.set(_tags);
+}
+
 /// Resolve Auto against the current registry. Cache the OS's tags, rather than a language,
 /// so matching remains separate from platform detection.
 /// Missing or unsupported system preferences always resolve to English.
@@ -17,7 +26,6 @@ pub fn system_lang() -> Lang {
     }
     #[cfg(not(test))]
     {
-        static SYSTEM: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
         resolve(SYSTEM.get_or_init(detect_system_tags))
     }
 }

@@ -153,7 +153,10 @@ fn theme_names_parse() {
     assert_eq!(ThemeKind::from_name("Classic"), Some(ThemeKind::Classic));
     assert_eq!(ThemeKind::from_name("studio (light)"), Some(ThemeKind::StudioLight));
     assert_eq!(ThemeKind::from_name("dark"), Some(ThemeKind::Pro));
+    assert_eq!(ThemeKind::from_name("ciemny"), Some(ThemeKind::Pro));
     assert_eq!(ThemeKind::from_name("light"), Some(ThemeKind::ProLight));
+    assert_eq!(ThemeKind::from_name("jasny"), Some(ThemeKind::ProLight));
+    assert_eq!(ThemeKind::from_name("sepia"), Some(ThemeKind::ProLightGray));
     assert_eq!(ThemeKind::from_name("studio"), Some(ThemeKind::Studio));
     assert_eq!(ThemeKind::from_name("Pro (Medium Gray)"), Some(ThemeKind::ProMedium));
     assert_eq!(ThemeKind::from_name("Solarized Dark"), Some(ThemeKind::SolarizedDark));

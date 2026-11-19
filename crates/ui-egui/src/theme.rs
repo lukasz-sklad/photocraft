@@ -136,10 +136,10 @@ impl ThemeKind {
     }
     pub fn from_name(s: &str) -> Option<Self> {
         match s.to_ascii_lowercase().replace([' ', '_', '-', '(', ')'], "").as_str() {
-            "pro" | "prodark" | "photoshop" | "dark" => Some(ThemeKind::Pro),
+            "pro" | "prodark" | "photoshop" | "dark" | "ciemny" => Some(ThemeKind::Pro),
             "promedium" | "promediumgray" | "medium" | "mediumgray" => Some(ThemeKind::ProMedium),
-            "prolightgray" | "lightgray" | "mediumlight" => Some(ThemeKind::ProLightGray),
-            "prolight" | "prolightest" | "lightest" | "light" => Some(ThemeKind::ProLight),
+            "prolightgray" | "lightgray" | "mediumlight" | "sepia" => Some(ThemeKind::ProLightGray),
+            "prolight" | "prolightest" | "lightest" | "light" | "jasny" => Some(ThemeKind::ProLight),
             "studio" | "studiodark" => Some(ThemeKind::Studio),
             "studiolight" => Some(ThemeKind::StudioLight),
             "classic" | "win2000" | "retro" => Some(ThemeKind::Classic),

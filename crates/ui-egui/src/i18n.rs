@@ -38,7 +38,7 @@ mod system;
 
 #[cfg(test)]
 pub(crate) use system::with_decimal_separator;
-pub use system::{decimal_separator, system_lang};
+pub use system::{decimal_separator, set_system_tags, system_lang};
 
 use std::cell::Cell;
 use std::collections::HashMap;

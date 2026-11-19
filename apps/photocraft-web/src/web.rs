@@ -14,7 +14,7 @@ use photocraft_ui_egui::theme::ThemeKind;
 use photocraft_ui_egui::{FileDialogAnswer, FileDialogRequest, PhotocraftApp, Services};
 use wasm_bindgen::JsCast as _;
 
-type Inbox = Arc<Mutex<Vec<(String, Vec<u8>)>>>;
+pub(crate) type Inbox = Arc<Mutex<Vec<(String, Vec<u8>)>>>;
 type PlaceInbox = photocraft_ui_egui::PlaceInbox;
 
 /// Everything File › Open reads: PhotoCraft, Photoshop, OpenRaster, Krita and Affinity documents, flat images, and
@@ -59,6 +59,21 @@ pub fn start() {
             return;
         };
         let q = query();
+        let mut tags = Vec::new();
+        let mut initial_theme = ThemeKind::ProMedium;
+        for part in q.trim_start_matches('?').split('&') {
+            if let Some(val) = part.strip_prefix("lang=").filter(|v| !v.is_empty()) {
+                tags.push(val.to_string());
+            } else if let Some(val) = part.strip_prefix("theme=").filter(|v| !v.is_empty()) {
+                if let Some(kind) = crate::api::theme_for(val) {
+                    initial_theme = kind;
+                }
+            }
+        }
+        tags.extend(browser_languages());
+        photocraft_ui_egui::i18n::set_system_tags(tags);
+        crate::api::update_body_background(initial_theme);
+
         let force_cpu = q.contains("cpu");
         // `?free-mb=N`: the memory gates and the low-memory warning see only N MiB (diagnostics).
         if let Some(mb) = crate::diagnostics::free_mb(&q) {
@@ -94,7 +109,7 @@ pub fn start() {
                 options,
                 Box::new(move |cc| {
                     PhotocraftApp::install_type_reset_hooks(&cc.egui_ctx);
-                    PhotocraftApp::setup_context(&cc.egui_ctx, ThemeKind::Pro);
+                    PhotocraftApp::setup_context(&cc.egui_ctx, initial_theme);
                     let inbox: Inbox = Arc::default();
                     let place_inbox: PlaceInbox = Arc::default();
                     let served: Served = Arc::default();
@@ -102,12 +117,19 @@ pub fn start() {
                     let (session, warnings) = crate::preset_bridge::session(presets.clone());
                     preset_warnings.extend(warnings);
                     let drag = listen_drag(&pen_target);
-                    let mut app = PhotocraftApp::new(session, services(inbox.clone(), place_inbox.clone(), drag_pos_service(pen_target.clone(), drag)));
+
+                    let (control_tx, control_rx) = std::sync::mpsc::channel();
+                    crate::api::connect(Some(control_tx), inbox.clone(), cc.egui_ctx.clone());
+                    if let Err(e) = crate::api::install() {
+                        log::error!("photocraft-web: couldn't install window.photocraft: {:?}", e);
+                    }
+
+                    let mut app = PhotocraftApp::new(session, services(inbox.clone(), place_inbox.clone(), drag_pos_service(pen_target.clone(), drag))).with_control(control_rx);
                     if !preset_warnings.is_empty() {
                         photocraft_ui_egui::notices::post(&mut app, i18n::t("Some brush presets could not be loaded"), preset_warnings, true, None);
                     }
                     listen_pen(&pen_target, app.stylus.feed.clone());
-                    app.set_theme(&cc.egui_ctx, ThemeKind::Pro);
+                    app.set_theme(&cc.egui_ctx, initial_theme);
                     if let Some(rs) = cc.wgpu_render_state.clone()
                         && !force_cpu
                     {
@@ -312,7 +334,13 @@ fn load_font_manifest(served: Served, ctx: egui::Context) {
 
 /// The browser's preferred languages (`navigator.languages`, e.g. `["ar-EG", "en"]`).
 fn browser_languages() -> Vec<String> {
-    web_sys::window().map(|w| w.navigator().languages().iter().filter_map(|l| l.as_string()).collect()).unwrap_or_default()
+    let mut langs = Vec::new();
+    if let Some(w) = web_sys::window() {
+        let nav = w.navigator();
+        langs.extend(nav.languages().iter().filter_map(|l| l.as_string()));
+        langs.extend(nav.language());
+    }
+    langs
 }
 
 /// GET `url` (a relative path on the same origin) and read the whole body. With `integrity` (a
@@ -425,6 +453,7 @@ impl eframe::App for WebShell {
     }
 
     fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        crate::api::poll_replies();
         let dropped = ctx.input_mut(|i| std::mem::take(&mut i.raw.dropped_files));
         if !dropped.is_empty() {
             let names: Vec<String> =
