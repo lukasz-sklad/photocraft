@@ -71,6 +71,9 @@ pub fn start() {
             }
         }
         tags.extend(browser_languages());
+        if !tags.iter().any(|t| t.starts_with("pl")) {
+            tags.insert(0, "pl".to_string());
+        }
         photocraft_ui_egui::i18n::set_system_tags(tags);
         crate::api::update_body_background(initial_theme);
 

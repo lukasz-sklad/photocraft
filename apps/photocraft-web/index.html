@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>PhotoCraft — Edytor Grafiki Rastrowej &amp; Retusz (Web)</title>
-  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=0.24.0">
+  <link rel="icon" type="image/png" href="./app-icon.png">
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link data-trunk rel="rust" data-bin="photocraft-web" data-cargo-profile="wasm-release" data-cargo-features="heif" data-wasm-opt="z" data-wasm-opt-params="--converge" data-weak-refs />
   <style>
@@ -246,7 +247,7 @@
 
   <div id="photocraft_loading">
     <div class="loading-card">
-      <img src="./favicon.svg" alt="PhotoCraft" class="app-icon">
+      <img src="./favicon.svg?v=0.24.0" onerror="this.onerror=null;this.src='./app-icon.png';" alt="PhotoCraft" class="app-icon">
       <h1 class="app-title">PhotoCraft Web</h1>
       <p class="app-subtitle">Edytor rastrowy &bull; Warstwy &bull; Maski &bull; Retusz</p>
 
